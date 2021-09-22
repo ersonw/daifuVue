@@ -71,8 +71,11 @@
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
         <el-form-item label="状态">
-          <el-select v-model="temp.status" class="filter-item" placeholder="Please select">
+          <el-select v-if="dialogStatus==='create'" v-model="temp.status" class="filter-item" placeholder="Please select">
             <el-option v-for="item in statusOptions" :key="item.id" :label="item.name" :value="item.id" :aria-label="item.name" />
+          </el-select>
+          <el-select v-if="dialogStatus!=='create'" v-model="temp.status" class="filter-item" placeholder="Please select">
+            <el-option v-for="item in statusOption" :key="item.id" :label="item.name" :value="item.id" :aria-label="item.name" />
           </el-select>
         </el-form-item>
         <el-form-item label="展示类型">
@@ -80,11 +83,23 @@
             <el-option v-for="item in typeOption" :key="item.id" :label="item.name" :value="item.id" :aria-label="item.name" />
           </el-select>
         </el-form-item>
-        <el-form-item label="客服名">
+        <el-form-item v-if="temp.type !== 3" label="客服名">
           <el-input v-model="temp.name" />
         </el-form-item>
-        <el-form-item label="链接地址">
+        <el-form-item v-if="temp.type !== 3" label="链接地址">
           <el-input v-model="temp.link" />
+        </el-form-item>
+        <el-form-item v-if="temp.type === 3" label="客服名(左)">
+          <el-input v-model="temp.leftName" />
+        </el-form-item>
+        <el-form-item v-if="temp.type === 3" label="链接地址(左)">
+          <el-input v-model="temp.leftLink" />
+        </el-form-item>
+        <el-form-item v-if="temp.type === 3" label="客服名(右)">
+          <el-input v-model="temp.rightName" />
+        </el-form-item>
+        <el-form-item v-if="temp.type === 3" label="链接地址(右)">
+          <el-input v-model="temp.rightLink" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -170,6 +185,7 @@ export default {
     return {
       typeOption: typeOption,
       statusOptions: statusOption,
+      statusOption: [],
       tableKey: 0,
       list: null,
       total: 0,
@@ -224,6 +240,11 @@ export default {
       })
     },
     createData() {
+      if(!this.temp.leftName || !this.temp.leftLink || !this.temp.rightName || !this.temp.rightLink ){
+        return
+      }
+      this.temp.name = `${this.temp.leftName}|${this.temp.rightName}`
+      this.temp.link = `${this.temp.leftLink}|${this.temp.rightLink}`
       this.dialogFormVisible = false
       add(this.temp).then(() => {
         this.getList()
@@ -237,6 +258,20 @@ export default {
     },
     handleUpdate(row) {
       this.temp = Object.assign({}, row) // copy obj
+      if (this.temp.type === 3) {
+        this.statusOption = this.statusOptions
+      }else{
+        this.statusOption = [
+          {
+            id: 1,
+            name: '超文本'
+          },
+          {
+            id: 2,
+            name: '长按钮'
+          }
+        ]
+      }
       this.dialogStatus = 'update'
       this.dialogFormVisible = true
       this.$nextTick(() => {
