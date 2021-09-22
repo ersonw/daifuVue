@@ -260,6 +260,12 @@ export default {
       this.temp = Object.assign({}, row) // copy obj
       if (this.temp.type === 3) {
         this.statusOption = this.typeOption
+        const name = (this.temp.name).split('|')
+        const link = (this.temp.link).split('|')
+        this.temp.leftName = name[0]
+        this.temp.rightName = name[1]
+        this.temp.leftLink = link[0]
+        this.temp.rightLink = link[1]
       }else{
         this.statusOption = [
           {
