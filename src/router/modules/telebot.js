@@ -42,6 +42,12 @@ const telebotRouter = {
       meta: { title: '统计管理', roles: ['admin'] }
     },
     {
+      path: 'contact',
+      component: () => import('@/views/telebot/contact'),
+      name: 'contact',
+      meta: { title: '客服管理', roles: ['admin'] }
+    },
+    {
       path: 'config',
       component: () => import('@/views/telebot/config'),
       name: 'config',

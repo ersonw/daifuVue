@@ -33,7 +33,7 @@
           <span>￥{{ row.amount | amountFilter }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="申请数量（约等于）" prop="id" align="center" width="220">
+      <el-table-column label="申请数量" prop="id" align="center" width="220">
         <template slot-scope="{row}">
           <span>{{ row.usdt }} U</span>
         </template>

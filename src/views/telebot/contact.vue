@@ -1,11 +1,10 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.id" placeholder="用户ID" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
       &#12288;&#12288;
       &#12288;&#12288;
-      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
-        搜索
+      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleCreate">
+        新增客服
       </el-button>
     </div>
 
@@ -17,41 +16,27 @@
       fit
       highlight-current-row
       style="width: 100%;"
-      @sort-change="sortChange"
     >
-      <el-table-column label="用户ID" prop="id" align="center" width="100">
+      <el-table-column label="ID" prop="id" align="center" width="100">
         <template slot-scope="{row}">
-          <span>{{ row.sid }}</span>
+          <span>{{ row.id }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="姓" prop="id" align="center" width="120">
+      <el-table-column label="客服名" prop="id" align="center" width="220">
         <template slot-scope="{row}">
-          <span>{{ row.last_name }}</span>
+          <span>{{ row.name }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="名" prop="id" align="center" width="120">
+      <el-table-column label="客服链接" prop="id" align="center" width="220">
         <template slot-scope="{row}">
-          <span>{{ row.first_name }}</span>
+          <span>{{ row.link }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="平台余额" prop="id" align="center" width="120">
+      <el-table-column label="展示类型" class-name="status-col" width="100">
         <template slot-scope="{row}">
-          <span>￥{{ row.amount | amountFilter }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="USDT汇率" prop="id" align="center" width="120">
-        <template slot-scope="{row}">
-          <span>{{ row.usdt2rmb }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="手续费" prop="id" align="center" width="120">
-        <template slot-scope="{row}">
-          <span>{{ row.fee }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="USDT地址" prop="id" align="center" width="120">
-        <template slot-scope="{row}">
-          <span>{{ row.usdt_addr }}</span>
+          <el-tag>
+            {{ row.status | typeFilter }}
+          </el-tag>
         </template>
       </el-table-column>
       <el-table-column label="创建时间" width="150px" align="center">
@@ -87,17 +72,16 @@
             <el-option v-for="item in statusOptions" :key="item.id" :label="item.name" :value="item.id" :aria-label="item.name" />
           </el-select>
         </el-form-item>
-        <el-form-item v-if="dialogStatus!=='create'" label="余额:￥">
-          <el-input v-model="temp.amount" label="￥" type="number" />
+        <el-form-item label="展示类型">
+          <el-select v-model="temp.type" class="filter-item" placeholder="Please select">
+            <el-option v-for="item in typeOption" :key="item.id" :label="item.name" :value="item.id" :aria-label="item.name" />
+          </el-select>
         </el-form-item>
-        <el-form-item v-if="dialogStatus!=='create'" label="USDT汇率">
-          <el-input v-model="temp.usdt2rmb" />
+        <el-form-item label="客服名">
+          <el-input v-model="temp.name" />
         </el-form-item>
-        <el-form-item v-if="dialogStatus!=='create'" label="手续费">
-          <el-input v-model="temp.fee" />
-        </el-form-item>
-        <el-form-item v-if="dialogStatus!=='create'" label="USDT地址">
-          <el-input v-model="temp.usdt_addr" />
+        <el-form-item label="链接地址">
+          <el-input v-model="temp.link" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -113,9 +97,7 @@
     <el-dialog :visible.sync="dialogPvVisible" title="删除提示">
       <template>
         <span>
-          点击继续提交将会删除掉所有用户以及
-          用户已经绑定的卡以及用户订单记录，<br>
-          并且将移除黑名单，用户再次注册又可以使用，<br>
+          点击继续提交将会删除掉记录不可恢复，<br>
           确定吗？
         </span>
       </template>
@@ -131,7 +113,7 @@
 
 <script>
 import waves from '@/directive/waves' // waves directive
-import { getList, update, del } from '@/api/telebot/users'
+import { getList, update, del, add } from '@/api/telebot/contact'
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination'
 
@@ -143,6 +125,16 @@ const statusOption = [
   {
     id: 1,
     name: '启用'
+  }
+]
+const typeOption = [
+  {
+    id: 1,
+    name: '超文本类型'
+  },
+  {
+    id: 2,
+    name: '按钮类型'
   }
 ]
 export default {
@@ -158,13 +150,18 @@ export default {
       }
       return '未知状态'
     },
-    amountFilter(amount) {
-      return (parseInt(amount) / 100).toFixed(2)
+    typeFilter(id) {
+      for (const v of typeOption) {
+        if (id === v.id) {
+          return v.name
+        }
+      }
+      return '未知状态'
     }
   },
   data() {
     return {
-      image: '',
+      typeOption: typeOption,
       statusOptions: statusOption,
       tableKey: 0,
       list: null,
@@ -186,12 +183,6 @@ export default {
         create: 'Create'
       },
       dialogPvVisible: false,
-      pvData: [],
-      rules: {
-        type: [{ required: true, message: 'type is required', trigger: 'change' }],
-        timestamp: [{ type: 'date', required: true, message: 'timestamp is required', trigger: 'change' }],
-        title: [{ required: true, message: 'title is required', trigger: 'blur' }]
-      },
       downloadLoading: false
     }
   },
@@ -199,9 +190,6 @@ export default {
     this.getList()
   },
   methods: {
-    amountFilter(amount) {
-      return (parseInt(amount) / 100).toFixed(2)
-    },
     getList() {
       this.listLoading = true
       getList(this.listQuery).then(response => {
@@ -214,40 +202,10 @@ export default {
         }, 1.5 * 1000)
       })
     },
-    handleFilter() {
-      this.listQuery.page = 1
-      this.getList()
-    },
-    handleModifyStatus(row, status) {
-      this.$message({
-        message: '操作Success',
-        type: 'success'
-      })
-      row.status = status
-    },
-    sortChange(data) {
-      const { prop, order } = data
-      if (prop === 'id') {
-        this.sortByID(order)
-      }
-    },
-    sortByID(order) {
-      if (order === 'ascending') {
-        this.listQuery.sort = '+id'
-      } else {
-        this.listQuery.sort = '-id'
-      }
-      this.handleFilter()
-    },
     resetTemp() {
       this.temp = {
-        id: undefined,
-        importance: 1,
-        remark: '',
-        timestamp: new Date(),
-        title: '',
-        status: 'published',
-        type: ''
+        status: 1,
+        type: 1
       }
     },
     handleCreate() {
@@ -258,10 +216,20 @@ export default {
         this.$refs['dataForm'].clearValidate()
       })
     },
+    createData() {
+      this.dialogFormVisible = false
+      add(this.temp).then(() => {
+        this.getList()
+        this.$notify({
+          title: 'Success',
+          message: 'Update Successfully',
+          type: 'success',
+          duration: 2000
+        })
+      })
+    },
     handleUpdate(row) {
       this.temp = Object.assign({}, row) // copy obj
-      this.temp.t = new Date().getTime()
-      this.temp.amount = this.amountFilter(this.temp.amount)
       this.dialogStatus = 'update'
       this.dialogFormVisible = true
       this.$nextTick(() => {
@@ -271,7 +239,6 @@ export default {
     updateData() {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
-          this.temp.amount = (this.temp.amount) * 100
           update(this.temp).then(() => {
             this.dialogFormVisible = false
             this.getList()
