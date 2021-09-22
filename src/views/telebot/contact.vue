@@ -1,6 +1,9 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
+      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="getList">
+        刷新界面
+      </el-button>
       &#12288;&#12288;
       &#12288;&#12288;
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleCreate">
@@ -35,7 +38,7 @@
       <el-table-column label="展示类型" class-name="status-col" width="100">
         <template slot-scope="{row}">
           <el-tag>
-            {{ row.status | typeFilter }}
+            {{ row.type | typeFilter }}
           </el-tag>
         </template>
       </el-table-column>
@@ -130,11 +133,15 @@ const statusOption = [
 const typeOption = [
   {
     id: 1,
-    name: '超文本类型'
+    name: '超文本'
   },
   {
     id: 2,
-    name: '按钮类型'
+    name: '长按钮'
+  },
+  {
+    id: 3,
+    name: '短按钮'
   }
 ]
 export default {
