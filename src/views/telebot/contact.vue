@@ -71,16 +71,16 @@
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
         <el-form-item label="状态">
-          <el-select v-if="dialogStatus==='create'" v-model="temp.status" class="filter-item" placeholder="Please select">
+          <el-select v-model="temp.status" class="filter-item" placeholder="Please select">
             <el-option v-for="item in statusOptions" :key="item.id" :label="item.name" :value="item.id" :aria-label="item.name" />
-          </el-select>
-          <el-select v-if="dialogStatus!=='create'" v-model="temp.status" class="filter-item" placeholder="Please select">
-            <el-option v-for="item in statusOption" :key="item.id" :label="item.name" :value="item.id" :aria-label="item.name" />
           </el-select>
         </el-form-item>
         <el-form-item label="展示类型">
-          <el-select v-model="temp.type" class="filter-item" placeholder="Please select">
+          <el-select v-if="dialogStatus==='create'" v-model="temp.type" class="filter-item" placeholder="Please select">
             <el-option v-for="item in typeOption" :key="item.id" :label="item.name" :value="item.id" :aria-label="item.name" />
+          </el-select>
+          <el-select v-if="dialogStatus!=='create'" v-model="temp.status" class="filter-item" placeholder="Please select">
+            <el-option v-for="item in statusOption" :key="item.id" :label="item.name" :value="item.id" :aria-label="item.name" />
           </el-select>
         </el-form-item>
         <el-form-item v-if="temp.type !== 3" label="客服名">
@@ -259,7 +259,7 @@ export default {
     handleUpdate(row) {
       this.temp = Object.assign({}, row) // copy obj
       if (this.temp.type === 3) {
-        this.statusOption = this.statusOptions
+        this.statusOption = this.typeOption
       }else{
         this.statusOption = [
           {
